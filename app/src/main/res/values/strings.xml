@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">OpenGL01</string>
+    <string name="minusX">-x</string>
+    <string name="plusX">+x</string>
+    <string name="minusY">-y</string>
+    <string name="plusY">+y</string>
+    <string name="minusZ">-z</string>
+    <string name="plusZ">+z</string>
+</resources>
