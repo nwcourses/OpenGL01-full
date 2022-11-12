@@ -94,6 +94,12 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         val shader = GLES20.glCreateShader(shaderType)
         GLES20.glShaderSource(shader, shaderCode)
         GLES20.glCompileShader(shader)
+        val status = IntArray(1)
+        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, status, 0)
+        if(status[0] == 0) {
+            Log.e("OpenGL01Log", "Error compiling shader: " + GLES20.glGetShaderInfoLog(shader))
+            return 0
+        }
         return shader
     }
 
@@ -102,6 +108,12 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         GLES20.glAttachShader(shaderProgram, vertexShader)
         GLES20.glAttachShader(shaderProgram, fragmentShader)
         GLES20.glLinkProgram(shaderProgram)
+        val status = IntArray(1)
+        GLES20.glGetShaderiv(shaderProgram, GLES20.GL_LINK_STATUS, status, 0)
+        if(status[0] == 0) {
+            Log.e("OpenGL01Log", "Error linking shader: " + GLES20.glGetShaderInfoLog(shaderProgram))
+            return 0
+        }
         GLES20.glUseProgram(shaderProgram)
         return shaderProgram
     }
