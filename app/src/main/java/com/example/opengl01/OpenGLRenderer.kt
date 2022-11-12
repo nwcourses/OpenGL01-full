@@ -2,6 +2,7 @@ package com.example.opengl01
 
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
+import android.opengl.Matrix
 import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -13,9 +14,10 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
 
     val vertexShaderSrc =
         "attribute vec4 aVertex;\n" +
+                "uniform mat4 uView, uProjection;\n" +
                 "void main(void)\n" +
                 "{\n"+
-                "gl_Position = aVertex;\n" +
+                "gl_Position = uProjection * uView * aVertex;\n" +
                 "}\n"
 
     val fragmentShaderSrc =
@@ -29,6 +31,9 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
     var shaderProgram = -1
 
     var fbuf: FloatBuffer? = null
+
+    var viewMatrix = FloatArray(16)
+    var projectionMatrix = FloatArray(16)
 
     // We initialise the OpenGL view here
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
@@ -46,14 +51,28 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         shaderProgram = linkShader(vertexShader, fragmentShader)
 
         // Define the vertices we want to draw, and make a buffer from them
-        val vertices = floatArrayOf( 0f,0f,0f, 1f,0f,0f, 0f,1f,0f,
-                                     0f,0f,0f, -1f,0f,0f, 0f,-1f,0f)
-        fbuf = makeBuffer(vertices)
+        val vertices = floatArrayOf( 0f,0f,-3f,  1f,0f,-3f,  0.5f,1f,-3f,
+            -0.5f,0f,-6f,  0.5f,0f,-6f,  0f,1f,-6f)
+
+        // verices with colours
+        val vertices2 = floatArrayOf(
+            0f,0f,-3f,  1f,0f,0f,
+            1f,0f,-3f,  0f,1f,0f,
+            0.5f,1f,-3f, 0f,0f,1f,
+            -0.5f,0f,-6f, 0f,1f,0f,
+            0.5f,0f,-6f,  0f,1f,0f,
+            0f,1f,-6f, 0f,1f,0f)
+
+
+        fbuf = makeBuffer(vertices2)
     }
 
     // We draw our shapes here
     override fun onDrawFrame(unused: GL10) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+
+        Matrix.setIdentityM(viewMatrix, 0)
+        Matrix.translateM(viewMatrix, 0, 0f, 0f, 2f)
 
         // Check we have a valid shader program and buffer
         if(shaderProgram > 0 && fbuf != null) {
@@ -63,11 +82,17 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
             // Enable it
             GLES20.glEnableVertexAttribArray(ref_aVertex)
 
+            val ref_uViewMatrix = GLES20.glGetUniformLocation(shaderProgram,"uView")
+            GLES20.glUniformMatrix4fv (ref_uViewMatrix, 1, false, viewMatrix, 0);
+
+            val ref_uProjMatrix = GLES20.glGetUniformLocation(shaderProgram,"uProjection")
+            GLES20.glUniformMatrix4fv (ref_uProjMatrix, 1, false, projectionMatrix, 0);
+
             // Create a reference to the uniform shader variable uColour
             val ref_uColour = GLES20.glGetUniformLocation(shaderProgram,"uColour")
 
             // Specify format of data in buffer
-            GLES20.glVertexAttribPointer(ref_aVertex, 3, GLES20.GL_FLOAT, false, 0, fbuf)
+            GLES20.glVertexAttribPointer(ref_aVertex, 3, GLES20.GL_FLOAT, false, 24, fbuf)
 
             // Send red colour to the shader
             val red = floatArrayOf(1.0f, 0.0f, 0.0f, 1.0f)
@@ -88,6 +113,10 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
     // Used if the screen is resized
     override fun onSurfaceChanged(unused: GL10, w: Int, h: Int) {
         GLES20.glViewport(0, 0, w, h)
+        val hfov = 60.0f
+        val aspect : Float = w.toFloat()/h
+        Matrix.perspectiveM(projectionMatrix, 0, hfov/aspect ,aspect, 0.001f, 100f)
+
     }
 
     fun compileShader(shaderType: Int, shaderCode: String) : Int {
