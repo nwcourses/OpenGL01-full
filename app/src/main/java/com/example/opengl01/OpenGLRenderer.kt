@@ -34,8 +34,7 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
     var shaderProgram = -1
 
 
-    var fbuf: FloatBuffer? = null
-    var colourbuf: FloatBuffer? = null
+    var allbuf: FloatBuffer? = null
 
     var viewMatrix = FloatArray(16)
     var projectionMatrix = FloatArray(16)
@@ -59,28 +58,16 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         val fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderSrc)
         shaderProgram = linkShader(vertexShader, fragmentShader)
 
-        // Define the vertices we want to draw, and make a buffer from them
-        val vertices = floatArrayOf(
-            0f, 0f, -3f,
-            1f, 0f, -3f,
-            0.5f, 1f, -3f,
-            -0.5f, 0f, -6f,
-            0.5f, 0f, -6f,
-            0f, 1f, -6f
+
+        val vertAndColours =   floatArrayOf(
+            0f, 0f, -3f,    1f,0f,0f,
+            1f, 0f, -3f,    0f,1f,0f,
+            0.5f, 1f, -3f,  0f,0f,1f,
+            -0.5f, 0f, -6f, 1f,0f,0f,
+            0.5f, 0f, -6f,  1f,1f,0f,
+            0f, 1f, -6f,    1f,0.5f, 0f
         )
-
-        val colours = floatArrayOf(
-            1f,0f,0f,
-            0f,1f,0f,
-            0f,0f,1f,
-            1f,0f,0f,
-            1f,1f,0f,
-            1f,0.5f,0f
-        )
-
-
-        fbuf = makeBuffer(vertices)
-        colourbuf = makeBuffer(colours)
+        allbuf = makeBuffer(vertAndColours)
 
     }
 
@@ -98,7 +85,7 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
 
 
         // Check we have a valid shader program and buffer
-        if (shaderProgram > 0 && fbuf != null) {
+        if (shaderProgram > 0 && allbuf != null) {
 
             GLES20.glUseProgram(shaderProgram)
             // Create a reference to the attribute shader variable aVertex
@@ -124,8 +111,10 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
 
 
             // Specify format of data in buffer
-            GLES20.glVertexAttribPointer(ref_aVertex, 3, GLES20.GL_FLOAT, false, 0, fbuf)
-            GLES20.glVertexAttribPointer(ref_aColour, 3, GLES20.GL_FLOAT, false, 0, colourbuf)
+            allbuf?.position(0)
+            GLES20.glVertexAttribPointer(ref_aVertex, 3, GLES20.GL_FLOAT, false, 24, allbuf)
+            allbuf?.position(3)
+            GLES20.glVertexAttribPointer(ref_aColour, 3, GLES20.GL_FLOAT, false, 24, allbuf)
 
             // Draw first triangle using first 3 vertices in buffer
 
