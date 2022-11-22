@@ -14,25 +14,28 @@ import javax.microedition.khronos.opengles.GL10
 class OpenGLRenderer : GLSurfaceView.Renderer {
 
     val vertexShaderSrc =
-        "attribute vec4 aVertex;\n" +
+        "attribute vec4 aVertex, aColour;\n" +
+    "varying vec4 vColour;\n" +
                 "uniform mat4 uView, uProjection;\n" +
                 "void main(void)\n" +
                 "{\n" +
                 "gl_Position = uProjection * uView * aVertex;\n" +
+                "vColour = aColour;\n" +
                 "}\n"
 
     val fragmentShaderSrc =
         "precision mediump float;\n" +
-                "uniform vec4 uColour;\n" +
+                "varying vec4 vColour;\n" +
                 "void main(void)\n" +
                 "{\n" +
-                "gl_FragColor = uColour;\n" +
+                "gl_FragColor = vColour;\n" +
                 "}\n"
 
     var shaderProgram = -1
 
 
     var fbuf: FloatBuffer? = null
+    var colourbuf: FloatBuffer? = null
 
     var viewMatrix = FloatArray(16)
     var projectionMatrix = FloatArray(16)
@@ -66,8 +69,18 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
             0f, 1f, -6f
         )
 
+        val colours = floatArrayOf(
+            1f,0f,0f,
+            0f,1f,0f,
+            0f,0f,1f,
+            1f,0f,0f,
+            1f,1f,0f,
+            1f,0.5f,0f
+        )
+
 
         fbuf = makeBuffer(vertices)
+        colourbuf = makeBuffer(colours)
 
     }
 
@@ -103,30 +116,20 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
             GLES20.glUniformMatrix4fv(ref_uProjMatrix, 1, false, projectionMatrix, 0);
 
 
-            // Create a reference to the uniform shader variable uColour
-            val ref_uColour = GLES20.glGetUniformLocation(shaderProgram, "uColour")
+            // Create a reference to the atrribute shader variable aColour
+            val ref_aColour = GLES20.glGetAttribLocation(shaderProgram, "aColour")
+            // Enable it
+            GLES20.glEnableVertexAttribArray(ref_aColour)
 
-
-
-
-            // Send red colour to the shader
-            val red = floatArrayOf(1.0f, 0.0f, 0.0f, 1.0f)
 
 
             // Specify format of data in buffer
             GLES20.glVertexAttribPointer(ref_aVertex, 3, GLES20.GL_FLOAT, false, 0, fbuf)
+            GLES20.glVertexAttribPointer(ref_aColour, 3, GLES20.GL_FLOAT, false, 0, colourbuf)
+
             // Draw first triangle using first 3 vertices in buffer
-            GLES20.glUniform4fv(ref_uColour, 1, red, 0)
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3)
 
-            // Send yellow colour to the shader
-
-            val yellow = floatArrayOf(1.0f, 1.0f, 0.0f, 1.0f)
-            GLES20.glUniform4fv(ref_uColour, 1, yellow, 0)
-
-            // Draw second triangle using vertices 3-5 in buffer
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 3, 3)
-
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
         }
     }
 
