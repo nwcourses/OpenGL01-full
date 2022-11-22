@@ -6,4 +6,8 @@
     <string name="plusY">+y</string>
     <string name="minusZ">-z</string>
     <string name="plusZ">+z</string>
+    <string name="rotateClockwise">Clock</string>
+    <string name="rotateAnticlockwise">Anti</string>
+    <string name="cameraForward">Fwd.</string>
+    <string name="cameraBack">Back</string>
 </resources>

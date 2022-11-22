@@ -57,7 +57,38 @@
         app:layout_constraintLeft_toRightOf="@id/minusZ"
         app:layout_constraintRight_toRightOf="parent"  />
 
-
+    <Button
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
+        android:id="@+id/rotateClockwise"
+        android:text="@string/rotateClockwise"
+        app:layout_constraintTop_toBottomOf="@id/plusX"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/rotateAnticlockwise"  />
+    <Button
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
+        android:id="@+id/rotateAnticlockwise"
+        android:text="@string/rotateAnticlockwise"
+        app:layout_constraintTop_toBottomOf="@id/plusX"
+        app:layout_constraintLeft_toRightOf="@id/rotateClockwise"
+        app:layout_constraintRight_toLeftOf="@id/cameraForward"  />
+    <Button
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
+        android:id="@+id/cameraForward"
+        android:text="@string/cameraForward"
+        app:layout_constraintTop_toBottomOf="@id/plusX"
+        app:layout_constraintLeft_toRightOf="@id/rotateAnticlockwise"
+        app:layout_constraintRight_toLeftOf="@id/cameraBack" />
+    <Button
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
+        android:id="@+id/cameraBack"
+        android:text="@string/cameraBack"
+        app:layout_constraintTop_toBottomOf="@id/plusX"
+        app:layout_constraintLeft_toRightOf="@id/cameraForward"
+        app:layout_constraintRight_toRightOf="parent"  />
 
     <com.example.opengl01.OpenGLView
         android:layout_width="0px"
