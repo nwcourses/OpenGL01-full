@@ -67,6 +67,8 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
     var cameraPos = FloatArray(3)
     var cameraRotation = 0f
 
+    var onTextureAvailableCallback: ((SurfaceTexture) -> Unit) ? = null
+
 
     // We initialise the OpenGL view here
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
@@ -131,6 +133,8 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
             ibuf = makeIndexBuffer(indices)
 
             createCameraRect()
+
+            onTextureAvailableCallback?.invoke(cameraFeedSurfaceTexture)
         }
     }
 

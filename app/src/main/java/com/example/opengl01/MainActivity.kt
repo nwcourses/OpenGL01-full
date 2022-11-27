@@ -26,6 +26,11 @@ class MainActivity : AppCompatActivity() {
 
         val openGLView = findViewById<OpenGLView>(R.id.glview)
 
+        openGLView.renderer.onTextureAvailableCallback = {
+            surfaceTexture = it
+            ActivityCompat.requestPermissions(this, permissions, 0)
+        }
+
         findViewById<Button>(R.id.plusX).setOnClickListener {
             openGLView.renderer.translateCamera(1f, 0f, 0f)
         }
@@ -56,8 +61,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.cameraBack).setOnClickListener {
             openGLView.renderer.moveCamera(-1.0f)
         }
-
-        ActivityCompat.requestPermissions(this, permissions, 0)
     }
 
     private fun checkPermissions(): Boolean {
