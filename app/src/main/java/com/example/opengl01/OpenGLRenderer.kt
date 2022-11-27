@@ -67,6 +67,8 @@ class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : G
     var cameraPos = FloatArray(3)
     var cameraRotation = 0f
 
+    var cameraFeedSurfaceTexture: SurfaceTexture? = null
+
 
 
     // We initialise the OpenGL view here
@@ -96,7 +98,7 @@ class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : G
                 GLES20.GL_NEAREST
             )
 
-            val cameraFeedSurfaceTexture = SurfaceTexture(textureId[0])
+            cameraFeedSurfaceTexture = SurfaceTexture(textureId[0])
             // Compile and link the shaders
             val vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderSrc)
             val fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderSrc)
@@ -133,7 +135,7 @@ class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : G
 
             createCameraRect()
 
-            textureAvailableCallback(cameraFeedSurfaceTexture)
+            textureAvailableCallback(cameraFeedSurfaceTexture!!)
         }
     }
 
@@ -141,6 +143,45 @@ class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : G
     override fun onDrawFrame(unused: GL10) {
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+
+
+        // Camera
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST)
+
+        cameraFeedSurfaceTexture?.updateTexImage()
+
+        //textureInterface?.select()
+        GLES20.glUseProgram(texShaderProgram)
+
+        /*
+        if (vbuf != null && ibuf != null) {
+            textureInterface?.drawIndexedBufferedData(vbuf!!, ibuf!!, 0, "aVertex")
+        }
+
+         */
+
+        if(texBuffer == null) {
+            Log.d("OpenGL01Log", "null tex buffer")
+            return
+        }
+
+        val attrVarRef = GLES20.glGetAttribLocation(texShaderProgram, "aVertex")
+        texBuffer?.position(0)
+        texIndexBuffer.position(0)
+
+        GLES20.glEnableVertexAttribArray(attrVarRef)
+        GLES20.glVertexAttribPointer(attrVarRef, 3, GLES20.GL_FLOAT, false, 0, texBuffer)
+
+        GLES20.glDrawElements(
+            GLES20.GL_TRIANGLES,
+            texIndexBuffer.limit(),
+            GLES20.GL_UNSIGNED_SHORT,
+            texIndexBuffer
+        )
+
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+
+        // Overlay
 
         Matrix.setIdentityM(viewMatrix, 0)
         Matrix.rotateM(viewMatrix, 0, -cameraRotation, 0f, 1f, 0f)

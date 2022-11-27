@@ -24,7 +24,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val openGLView = OpenGLView(this) {
             surfaceTexture = it
-            ActivityCompat.requestPermissions(this, permissions, 0)
+            if (!startCamera()) {
+                ActivityCompat.requestPermissions(this, permissions, 0)
+            }
         }
         setContentView(openGLView)
 
@@ -77,7 +79,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 0 && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-         //   startCamera()
+           startCamera()
         } else {
             AlertDialog.Builder(this).setPositiveButton("OK", null)
                 .setMessage("Will not work as camera permission not granted").show()
@@ -85,9 +87,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startCamera(): Boolean {
-        Log.d("OpenGL01", "startCamera()")
+        Log.d("OpenGL01Log", "startCamera()")
         if (checkPermissions()) {
-            Log.d("CAMERAXGL", "startCamera() ready to go")
+            Log.d("OpenGL01Log", "startCamera() ready to go")
             val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
             cameraProviderFuture.addListener({
                 val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
@@ -115,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                     cameraProvider.bindToLifecycle(this, cameraSelector, preview)
 
                 } catch (e: Exception) {
-                    Log.e("OpenGL01", e.stackTraceToString())
+                    Log.e("OpenGL01Log", e.stackTraceToString())
                 }
             }, ContextCompat.getMainExecutor(this))
             return true
