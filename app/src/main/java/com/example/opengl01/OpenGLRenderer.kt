@@ -12,7 +12,7 @@ import java.nio.ShortBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class OpenGLRenderer : GLSurfaceView.Renderer {
+class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : GLSurfaceView.Renderer {
 
     val vertexShaderSrc =
         "attribute vec4 aVertex;\n" +
@@ -67,7 +67,6 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
     var cameraPos = FloatArray(3)
     var cameraRotation = 0f
 
-    var onTextureAvailableCallback: ((SurfaceTexture) -> Unit) ? = null
 
 
     // We initialise the OpenGL view here
@@ -134,7 +133,7 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
 
             createCameraRect()
 
-            onTextureAvailableCallback?.invoke(cameraFeedSurfaceTexture)
+            textureAvailableCallback(cameraFeedSurfaceTexture)
         }
     }
 
