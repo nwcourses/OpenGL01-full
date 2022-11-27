@@ -1,5 +1,6 @@
 package com.example.opengl01
 
+import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
@@ -75,39 +76,58 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         GLES20.glClearDepthf(1.0f)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
 
-        // Compile and link the shaders
-        val vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderSrc)
-        val fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderSrc)
-        shaderProgram = linkShader(vertexShader, fragmentShader)
+        // http://stackoverflow.com/questions/6414003/using-surfacetexture-in-android
+        val GL_TEXTURE_EXTERNAL_OES = 0x8d65
+        val textureId = IntArray(1)
+        GLES20.glGenTextures(1, textureId, 0)
+        if (textureId[0] != 0) {
+            GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureId[0])
+            GLES20.glTexParameteri(
+                GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MIN_FILTER,
+                GLES20.GL_NEAREST
+            )
+            GLES20.glTexParameteri(
+                GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MAG_FILTER,
+                GLES20.GL_NEAREST
+            )
 
-        val texVertexShader = compileShader(GLES20.GL_VERTEX_SHADER, texVertexShaderSrc)
-        val texFragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, texFragmentShaderSrc)
-        texShaderProgram = linkShader(texVertexShader, texFragmentShader)
+            val cameraFeedSurfaceTexture = SurfaceTexture(textureId[0])
+            // Compile and link the shaders
+            val vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderSrc)
+            val fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderSrc)
+            shaderProgram = linkShader(vertexShader, fragmentShader)
 
-        // Define the vertices we want to draw, and make a buffer from them
-        val vertices = floatArrayOf(
-            0f, 0f, -3f,
-            1f, 0f, -3f,
-            0.5f, 1f, -3f,
-            -0.5f, 0f, -6f,
-            0.5f, 0f, -6f,
-            0f, 1f, -6f
-        )
+            val texVertexShader = compileShader(GLES20.GL_VERTEX_SHADER, texVertexShaderSrc)
+            val texFragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, texFragmentShaderSrc)
+            texShaderProgram = linkShader(texVertexShader, texFragmentShader)
 
-
-        val square = floatArrayOf(
-            -1f, 0f, -2f,
-            0f, 0f, -2f,
-            0f, 1f, -2f,
-            -1f, 1f, -2f
-        )
-
-        val indices = shortArrayOf(0, 1, 2, 2, 3, 0)
+            // Define the vertices we want to draw, and make a buffer from them
+            val vertices = floatArrayOf(
+                0f, 0f, -3f,
+                1f, 0f, -3f,
+                0.5f, 1f, -3f,
+                -0.5f, 0f, -6f,
+                0.5f, 0f, -6f,
+                0f, 1f, -6f
+            )
 
 
-        fbuf = makeBuffer(vertices)
-        fbuf2 = makeBuffer(square)
-        ibuf = makeIndexBuffer(indices)
+            val square = floatArrayOf(
+                -1f, 0f, -2f,
+                0f, 0f, -2f,
+                0f, 1f, -2f,
+                -1f, 1f, -2f
+            )
+
+            val indices = shortArrayOf(0, 1, 2, 2, 3, 0)
+
+
+            fbuf = makeBuffer(vertices)
+            fbuf2 = makeBuffer(square)
+            ibuf = makeIndexBuffer(indices)
+        }
     }
 
     // We draw our shapes here
