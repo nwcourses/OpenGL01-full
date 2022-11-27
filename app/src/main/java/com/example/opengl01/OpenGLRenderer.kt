@@ -56,8 +56,10 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
 
     var fbuf: FloatBuffer? = null
     var fbuf2: FloatBuffer? = null
+    var texBuffer: FloatBuffer? = null
 
     lateinit var ibuf: ShortBuffer
+    lateinit var texIndexBuffer: ShortBuffer
 
     var viewMatrix = FloatArray(16)
     var projectionMatrix = FloatArray(16)
@@ -127,6 +129,8 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
             fbuf = makeBuffer(vertices)
             fbuf2 = makeBuffer(square)
             ibuf = makeIndexBuffer(indices)
+
+            createCameraRect()
         }
     }
 
@@ -245,6 +249,15 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         sbuf.put(indices)
         sbuf.position(0)
         return sbuf
+    }
+
+    private fun createCameraRect() {
+
+        val cameraRect = floatArrayOf(-1f, 1f, 0f, -1f, -1f, 0f, 1f, -1f, 0f, 1f, 1f, 0f)
+        val indices = shortArrayOf(0, 1, 2, 2, 3, 0)
+
+        texBuffer = makeBuffer(cameraRect)
+        texIndexBuffer = makeIndexBuffer(indices)
     }
 
     fun translateCamera(dx: Float, dy: Float, dz: Float) {
