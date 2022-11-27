@@ -86,19 +86,13 @@ class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : G
         val textureId = IntArray(1)
         GLES20.glGenTextures(1, textureId, 0)
         if (textureId[0] != 0) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
             GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureId[0])
-            GLES20.glTexParameteri(
-                GL_TEXTURE_EXTERNAL_OES,
-                GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_NEAREST
-            )
-            GLES20.glTexParameteri(
-                GL_TEXTURE_EXTERNAL_OES,
-                GLES20.GL_TEXTURE_MAG_FILTER,
-                GLES20.GL_NEAREST
-            )
+
+            // Mag filters not really needed here...
 
             cameraFeedSurfaceTexture = SurfaceTexture(textureId[0])
+
             // Compile and link the shaders
             val vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderSrc)
             val fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderSrc)
@@ -135,6 +129,10 @@ class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : G
 
             createCameraRect()
 
+            val refShaderVar = GLES20.glGetUniformLocation(texShaderProgram, "uTexture")
+            GLES20.glUniform1i(refShaderVar, 0)
+
+
             textureAvailableCallback(cameraFeedSurfaceTexture!!)
         }
     }
@@ -152,13 +150,6 @@ class OpenGLRenderer(val textureAvailableCallback: (SurfaceTexture) -> Unit) : G
 
         //textureInterface?.select()
         GLES20.glUseProgram(texShaderProgram)
-
-        /*
-        if (vbuf != null && ibuf != null) {
-            textureInterface?.drawIndexedBufferedData(vbuf!!, ibuf!!, 0, "aVertex")
-        }
-
-         */
 
         if(texBuffer == null) {
             Log.d("OpenGL01Log", "null tex buffer")
