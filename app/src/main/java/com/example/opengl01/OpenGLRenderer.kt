@@ -29,7 +29,28 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
                 "gl_FragColor = uColour;\n" +
                 "}\n"
 
+    // Must negate y when calculating texcoords from vertex coords as bitmap image data assumes
+    // y increases downwards
+    val texVertexShaderSrc =
+        "attribute vec4 aVertex;\n" +
+                "varying vec2 vTextureValue;\n" +
+                "void main (void)\n" +
+                "{\n" +
+                "gl_Position = aVertex;\n" +
+                "vTextureValue = vec2(0.5*(1.0 + aVertex.x), 0.5*(1.0-aVertex.y));\n" +
+                "}\n"
+    val texFragmentShaderSrc =
+        "#extension GL_OES_EGL_image_external: require\n" +
+                "precision mediump float;\n" +
+                "varying vec2 vTextureValue;\n" +
+                "uniform samplerExternalOES uTexture;\n" +
+                "void main(void)\n" +
+                "{\n" +
+                "gl_FragColor = texture2D(uTexture,vTextureValue);\n" +
+                "}\n"
+
     var shaderProgram = -1
+    var texShaderProgram = -1
 
 
     var fbuf: FloatBuffer? = null
@@ -58,6 +79,10 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         val vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderSrc)
         val fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderSrc)
         shaderProgram = linkShader(vertexShader, fragmentShader)
+
+        val texVertexShader = compileShader(GLES20.GL_VERTEX_SHADER, texVertexShaderSrc)
+        val texFragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, texFragmentShaderSrc)
+        texShaderProgram = linkShader(texVertexShader, texFragmentShader)
 
         // Define the vertices we want to draw, and make a buffer from them
         val vertices = floatArrayOf(
@@ -169,7 +194,18 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
         GLES20.glAttachShader(shaderProgram, vertexShader)
         GLES20.glAttachShader(shaderProgram, fragmentShader)
         GLES20.glLinkProgram(shaderProgram)
+        val linkStatus = IntArray(1)
+        GLES20.glGetProgramiv(shaderProgram, GLES20.GL_LINK_STATUS, linkStatus, 0)
+        if (linkStatus[0] == 0) {
+            Log.e(
+                "OpenGL01Log",
+                "Error linking shader program: " + GLES20.glGetProgramInfoLog(shaderProgram)
+            )
+            GLES20.glDeleteProgram(shaderProgram)
+            return -1
+        }
         GLES20.glUseProgram(shaderProgram)
+        Log.d("OpenGL01Log", "Shader program = $shaderProgram")
         return shaderProgram
     }
 
