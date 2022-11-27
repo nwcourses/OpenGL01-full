@@ -126,8 +126,9 @@ class OpenGLRenderer : GLSurfaceView.Renderer {
             // Send red colour to the shader
             val red = floatArrayOf(1.0f, 0.0f, 0.0f, 1.0f)
             val blue = floatArrayOf(0.0f, 0.0f, 1.0f, 1.0f)
-            GLES20.glUniform4fv(ref_uColour, 1, blue, 0)
 
+
+            GLES20.glUniform4fv(ref_uColour, 1, blue, 0)
             GLES20.glDrawElements(GLES20.GL_TRIANGLES, ibuf.limit(), GLES20.GL_UNSIGNED_SHORT, ibuf)
 
 
